@@ -25,8 +25,8 @@ stages:
     steps:
       - checkout: self
 
-      - script: fcli fod session login
-        displayName: '1. Login to Fortify on Demand'
+      - script: fcli --version
+        displayName: '1. fcli version check'
 
       - script: scancentral package -bt mvn -bf $(Build.SourcesDirectory)/pom.xml -oss -o package.zip
         displayName: '2. Package application source code with scancentral'
