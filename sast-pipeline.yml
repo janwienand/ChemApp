@@ -22,6 +22,7 @@ stages:
       NOTES_FOR_FOD: 'Triggered by ADO Pipeline $(Build.BuildId): $(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)'
 
     steps:
+      - checkout: self
       - script: fcli --version
         displayName: '1. Login to Fortify on Demand'
 
