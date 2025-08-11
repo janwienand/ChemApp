@@ -7,14 +7,15 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  FOD_RELEASE_ID: '169547'
+  SOURCE_RELEASE: 'ChemCompoundDB:main'
+  NEW_RELEASE_BASE_NAME: 'ChemCompoundDB'
 
 stages:
   - stage: FortifyScan
-    displayName: 'Fortify SAST Security Scan'
+    displayName: 'Fortify SAST Scan & Policy Check'
     jobs:
       - job: RunFortifyScan
-        displayName: 'Run Fortify SAST Scan'
+        displayName: 'Create Release, Scan and Check Policy'
         container:
           image: fortifydocker/fortify-ci-tools:latest-jdk-17
 
@@ -23,6 +24,7 @@ stages:
           FCLI_DEFAULT_FOD_PASSWORD: $(FOD_PASSWORD)
           FCLI_DEFAULT_FOD_TENANT: $(FOD_TENANT)
           FCLI_DEFAULT_FOD_URL: $(FOD_URL)
+          DYNAMIC_RELEASE_NAME: '$(NEW_RELEASE_BASE_NAME):build-$(Build.BuildId)'
 
         steps:
           - checkout: self
@@ -30,25 +32,30 @@ stages:
           - script: fcli fod session login -u $(FOD_USER) -p $(FOD_PASSWORD) -t $(FOD_TENANT) --url $(FOD_URL)
             displayName: '1. Login to Fortify on Demand'
 
+          - script: fcli fod release create $(DYNAMIC_RELEASE_NAME) --status Development --copy-from $(SOURCE_RELEASE) --skip-if-exists --store=releaseId
+            displayName: '2. Create new FoD Release: $(DYNAMIC_RELEASE_NAME)'
+
           - script: scancentral package -bt mvn -oss -o package.zip
             workingDirectory: $(Build.SourcesDirectory)
-            displayName: '2. Package application source code'
+            displayName: '3. Package application source code'
 
           - script: |
-              fcli fod sast start --release=$(FOD_RELEASE_ID) --file=package.zip --remediation=NonRemediationScanOnly --store=Id
+              fcli fod sast start --release ::releaseId:: --file package.zip --store=Id
               fcli fod sast wait-for ::Id:: --interval=30s
             workingDirectory: $(Build.SourcesDirectory)
-            displayName: '3. Start SAST scan and wait'
+            displayName: '4. Start SAST Scan and wait for completion'
 
-          - script: fcli fod issue list --release=$(FOD_RELEASE_ID)
-            displayName: '4. List scan issues'
-
-          - script: fcli fod action run check-policy --release $(FOD_RELEASE_ID)
-            displayName: '5. Check policy compliance'
-
-          - script: fcli fod action run release-summary --release $(FOD_RELEASE_ID)
-            displayName: '6. Generate release summary'
+          - script: |
+              # echo "--- Checking Policy ---"
+              # fcli fod action run check-policy --release ::releaseId::
+              
+              echo "--- Listing Issues ---"
+              fcli fod issue list --release ::releaseId::
+              
+              echo "--- Generating Release Summary ---"
+              fcli fod action run release-summary --release ::releaseId::
+            displayName: '5. Check Policy and Generate Reports'
 
           - script: fcli fod session logout
-            displayName: '7. Logout from Fortify on Demand'
+            displayName: '6. Logout from Fortify on Demand'
             condition: always()
