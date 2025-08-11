@@ -1,6 +1,5 @@
 # Default ignored files
 .idea
-*.iml
 *.fpr
 *.zip
 *.lock
