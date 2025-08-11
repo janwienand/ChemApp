@@ -35,3 +35,6 @@ stages:
 
       - script: ls -l
         workingDirectory: $(Build.SourcesDirectory)
+
+      - script: fcli fod action run package
+        workingDirectory: $(Build.SourcesDirectory)
