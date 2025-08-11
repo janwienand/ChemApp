@@ -1,6 +1,5 @@
 package org.example;
 
-import java.security.InvalidKeyException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -8,7 +7,6 @@ import java.sql.Statement;
 import java.sql.SQLException;
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.SecretKeySpec;
 import java.security.NoSuchAlgorithmException;
 import static spark.Spark.*;
 
@@ -118,9 +116,7 @@ public class ChemCompoundDB {
         }
     }
 
-    private void legacyEncrypt() throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException {
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        SecretKeySpec secretKey = new SecretKeySpec(API_SECRET_KEY.getBytes(), "AES");
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+    private void legacyEncrypt() throws NoSuchAlgorithmException, NoSuchPaddingException {
+        Cipher desCipher = Cipher.getInstance("DES");
     }
 }
