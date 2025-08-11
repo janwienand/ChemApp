@@ -1,0 +1,36 @@
+# azure-pipelines.yml
+
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+- stage: FortifyScan
+  displayName: 'Fortify SAST Security Scan'
+  jobs:
+  - job: RunFortifyScan
+    displayName: 'Run Fortify SAST Scan'
+    container:
+      image: fortifydocker/fortify-ci-tools:latest-jdk-17
+    
+    variables:
+      FCLI_DEFAULT_FOD_USER: $(FOD_USER)
+      FCLI_DEFAULT_FOD_PASSWORD: $(FOD_PASSWORD)
+      FCLI_DEFAULT_FOD_TENANT: $(FOD_TENANT)
+      FCLI_DEFAULT_FOD_URL: $(FOD_URL)
+      NOTES_FOR_FOD: 'Triggered by ADO Pipeline $(Build.BuildId): $(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)'
+
+    steps:
+      - checkout: self
+
+      - script: fcli --version
+
+      - script: ls -l
+        workingDirectory: $(Build.SourcesDirectory)
+
+      - script: scancentral package -bt mvn -oss -o package.zip
+        workingDirectory: $(Build.SourcesDirectory)
+
+      - script: maven --version
