@@ -1,3 +1,5 @@
+# azure-pipelines.yml
+
 trigger:
 - main
 
@@ -11,23 +13,21 @@ stages:
   - job: RunFortifyScan
     displayName: 'Run Fortify SAST Scan'
     container:
-      image: fortifydocker/fortify-ci-tools:latest-jdk-17
+      # Empfehlung: Eine spezifische Version statt 'latest' verwenden
+      image: fortifydocker/fortify-ci-tools:25.2.0-jdk-17
     
     variables:
       FCLI_DEFAULT_FOD_USER: $(FOD_USER)
       FCLI_DEFAULT_FOD_PASSWORD: $(FOD_PASSWORD)
       FCLI_DEFAULT_FOD_TENANT: $(FOD_TENANT)
       FCLI_DEFAULT_FOD_URL: $(FOD_URL)
-
       NOTES_FOR_FOD: 'Triggered by ADO Pipeline $(Build.BuildId): $(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)'
 
     steps:
       - checkout: self
-      - script: fcli --version
+
+      - script: fcli fod session login
         displayName: '1. Login to Fortify on Demand'
 
-      - script: scancentral package -bt mvn -oss -o package.zip
+      - script: scancentral package -bt mvn -bf $(Build.SourcesDirectory)/pom.xml -oss -o package.zip
         displayName: '2. Package application source code with scancentral'
-      
-      - script: fcli fod action run package
-        displayName: '3. Package application source code with fod action'
