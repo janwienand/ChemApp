@@ -1,8 +1,8 @@
-# ChemCompound DB - SAST Demo Application
+# ChemApp - SAST Demo Application
 
 ## 1. Overview
 
-**ChemCompound DB** is a simple Java web application built for demonstration purposes.
+**ChemApp** is a simple Java web application built for demonstration purposes.
 
 It uses the following technologies:
 * **Language:** Java 8
