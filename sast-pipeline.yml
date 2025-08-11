@@ -26,9 +26,11 @@ stages:
       - checkout: self
 
       - script: fcli --version
-      - script: maven --version
+
       - script: ls -l
         workingDirectory: $(Build.SourcesDirectory)
 
       - script: scancentral package -bt mvn -oss -o package.zip
         workingDirectory: $(Build.SourcesDirectory)
+
+      - script: maven --version
