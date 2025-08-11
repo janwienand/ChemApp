@@ -33,4 +33,5 @@ stages:
       - script: scancentral package -bt mvn -oss -o package.zip
         workingDirectory: $(Build.SourcesDirectory)
 
-      - script: maven --version
+      - script: ls -l
+        workingDirectory: $(Build.SourcesDirectory)
