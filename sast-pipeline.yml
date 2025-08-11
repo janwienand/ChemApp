@@ -29,11 +29,13 @@ stages:
         steps:
           - checkout: self
 
-          - script: fcli fod session login -u $(FOD_USER) -p $(FOD_PASSWORD) -t $(FOD_TENANT) --url $(FOD_URL)
+          - script: fcli fod session login
             displayName: '1. Login to Fortify on Demand'
 
-          - script: fcli fod release create $(DYNAMIC_RELEASE_NAME) --status Development --store=releaseId
-            displayName: '2. Create new Release: $(DYNAMIC_RELEASE_NAME)'
+          - script: |
+              fcli fod release create $(DYNAMIC_RELEASE_NAME) --status Development --store=releaseId
+              fcli fod sast-scan setup --release ::releaseId:: --assessment-type "Static Assessment" --entitlement-frequency Subscription --audit-preference Automated --oss --use-aviator
+            displayName: '2. Create new FoD Release: $(DYNAMIC_RELEASE_NAME)'
 
           - script: scancentral package -bt mvn -oss -o package.zip
             workingDirectory: $(Build.SourcesDirectory)
