@@ -1,40 +1,54 @@
 # azure-pipelines.yml
 
 trigger:
-- main
+  - main
 
 pool:
   vmImage: 'ubuntu-latest'
 
+variables:
+  FOD_RELEASE_ID: '169547'
+
 stages:
-- stage: FortifyScan
-  displayName: 'Fortify SAST Security Scan'
-  jobs:
-  - job: RunFortifyScan
-    displayName: 'Run Fortify SAST Scan'
-    container:
-      image: fortifydocker/fortify-ci-tools:latest-jdk-17
-    
-    variables:
-      FCLI_DEFAULT_FOD_USER: $(FOD_USER)
-      FCLI_DEFAULT_FOD_PASSWORD: $(FOD_PASSWORD)
-      FCLI_DEFAULT_FOD_TENANT: $(FOD_TENANT)
-      FCLI_DEFAULT_FOD_URL: $(FOD_URL)
-      NOTES_FOR_FOD: 'Triggered by ADO Pipeline $(Build.BuildId): $(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)'
+  - stage: FortifyScan
+    displayName: 'Fortify SAST Security Scan'
+    jobs:
+      - job: RunFortifyScan
+        displayName: 'Run Fortify SAST Scan'
+        container:
+          image: fortifydocker/fortify-ci-tools:latest-jdk-17
 
-    steps:
-      - checkout: self
+        variables:
+          FCLI_DEFAULT_FOD_USER: $(FOD_USER)
+          FCLI_DEFAULT_FOD_PASSWORD: $(FOD_PASSWORD)
+          FCLI_DEFAULT_FOD_TENANT: $(FOD_TENANT)
+          FCLI_DEFAULT_FOD_URL: $(FOD_URL)
 
-      - script: fcli --version
+        steps:
+          - checkout: self
 
-      - script: ls -l
-        workingDirectory: $(Build.SourcesDirectory)
+          - script: fcli fod session login
+            displayName: '1. Login to Fortify on Demand'
 
-      - script: scancentral package -bt mvn -oss -o package.zip
-        workingDirectory: $(Build.SourcesDirectory)
+          - script: scancentral package -bt mvn -oss -o package.zip
+            workingDirectory: $(Build.SourcesDirectory)
+            displayName: '2. Package application source code'
 
-      - script: ls -l
-        workingDirectory: $(Build.SourcesDirectory)
+          - script: |
+              fcli fod sast start --release=$(FOD_RELEASE_ID) --file=package.zip --remediation=NonRemediationScanOnly --store=Id
+              fcli fod sast wait-for ::Id:: --interval=30s
+            workingDirectory: $(Build.SourcesDirectory)
+            displayName: '3. Start SAST scan and wait'
 
-      - script: fcli fod action run package
-        workingDirectory: $(Build.SourcesDirectory)
+          - script: fcli fod issue list --release=$(FOD_RELEASE_ID)
+            displayName: '4. List scan issues'
+
+          - script: fcli fod action run check-policy --release $(FOD_RELEASE_ID)
+            displayName: '5. Check policy compliance'
+
+          - script: fcli fod action run release-summary --release $(FOD_RELEASE_ID)
+            displayName: '6. Generate release summary'
+
+          - script: fcli fod session logout
+            displayName: '7. Logout from Fortify on Demand'
+            condition: always()
