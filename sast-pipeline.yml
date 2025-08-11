@@ -1,19 +1,26 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - main
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+stages:
+- stage: FortifyScan
+  displayName: 'Fortify SAST Security Scan'
+  jobs:
+  - job: RunFortifyScan
+    displayName: 'Run Fortify SAST Scan'
+    container:
+      image: fortifydocker/fortify-ci-tools:24.1.0-jdk-17
+    
+    variables:
+      FCLI_DEFAULT_FOD_USER: $(FOD_USER)
+      FCLI_DEFAULT_FOD_PASSWORD: $(FOD_PASSWORD)
+      FCLI_DEFAULT_FOD_TENANT: $(FOD_TENANT)
+      FCLI_DEFAULT_FOD_URL: $(FOD_URL)
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+      NOTES_FOR_FOD: 'Triggered by ADO Pipeline $(Build.BuildId): $(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)'
+
+    steps:
+      - script: fcli --version
+        displayName: '1. Login to Fortify on Demand'
