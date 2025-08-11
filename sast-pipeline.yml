@@ -28,5 +28,6 @@ stages:
       - script: fcli --version
         displayName: '1. fcli version check'
 
-      - script: scancentral package -bt mvn -bf $(Build.SourcesDirectory)/pom.xml -oss -o package.zip
+      - script: scancentral package -bt mvn -oss -o package.zip
+        workingDirectory: $(Build.SourcesDirectory)
         displayName: '2. Package application source code with scancentral'
