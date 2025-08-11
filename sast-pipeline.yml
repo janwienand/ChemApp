@@ -29,7 +29,7 @@ stages:
         steps:
           - checkout: self
 
-          - script: fcli fod session login
+          - script: fcli fod session login -u $(FOD_USER) -p $(FOD_PASSWORD) -t $(FOD_TENANT) --url $(FOD_URL)
             displayName: '1. Login to Fortify on Demand'
 
           - script: |
