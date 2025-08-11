@@ -42,7 +42,7 @@ stages:
               fcli fod sast start --release ::releaseId:: --file package.zip --store=Id
               fcli fod sast wait-for ::Id:: --interval=30s
             workingDirectory: $(Build.SourcesDirectory)
-            displayName: '4. Start SAST Scan and wait for completion'
+            displayName: '4. Start SAST+ SCA Scan and wait for completion'
 
           - script: |
               echo "--- Listing Issues ---"
