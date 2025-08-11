@@ -3,6 +3,8 @@ package org.example;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -48,6 +50,12 @@ public class ChemCompoundDB {
             html.append("<form action='/logs' method='get'>");
             html.append("Log file: <input type='text' name='file' value='system.log'>");
             html.append("<input type='submit' value='View Log'>");
+            html.append("</form>");
+            html.append("<hr>");
+            html.append("<h3>Run Diagnostics</h3>");
+            html.append("<form action='/diag' method='get'>");
+            html.append("Host to ping: <input type='text' name='host' value='localhost'>");
+            html.append("<input type='submit' value='Run Ping'>");
             html.append("</form>");
             html.append("<hr>");
             html.append("<h2>Research Notes</h2>");
@@ -113,6 +121,7 @@ public class ChemCompoundDB {
             String logFile = req.queryParams("file");
             String logDirectory = "logs/";
 
+            // VULNERABILITY: Path Manipulation
             Path path = Paths.get(logDirectory + logFile);
 
             try {
@@ -122,6 +131,38 @@ public class ChemCompoundDB {
             } catch (IOException e) {
                 return "Error reading log file: " + e.getMessage();
             }
+        });
+
+        get("/diag", (req, res) -> {
+            String host = req.queryParams("host");
+            String command;
+
+            if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                command = "ping -n 4 " + host;
+            } else {
+                command = "ping -c 4 " + host;
+            }
+
+            StringBuilder output = new StringBuilder();
+            output.append("<h2>Diagnostic Output for: ").append(host).append("</h2>");
+            output.append("<pre>");
+
+            try {
+                Process process = Runtime.getRuntime().exec(command);
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    output.append(line).append("\n");
+                }
+                process.waitFor();
+                reader.close();
+
+            } catch (IOException | InterruptedException e) {
+                output.append("Error executing command: ").append(e.getMessage());
+            }
+            output.append("</pre>");
+            return output.toString();
         });
     }
 
@@ -142,7 +183,6 @@ public class ChemCompoundDB {
             System.exit(1);
         }
 
-        // Create a dummy log directory and file for the Path Manipulation demo
         try {
             File logDir = new File("logs");
             if (!logDir.exists()) {
