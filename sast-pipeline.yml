@@ -32,8 +32,8 @@ stages:
           - script: fcli fod session login -u $(FOD_USER) -p $(FOD_PASSWORD) -t $(FOD_TENANT) --url $(FOD_URL)
             displayName: '1. Login to Fortify on Demand'
 
-          - script: fcli fod release create $(DYNAMIC_RELEASE_NAME) --status Development --copy-from $(SOURCE_RELEASE) --skip-if-exists --store=releaseId
-            displayName: '2. Create new FoD Release: $(DYNAMIC_RELEASE_NAME)'
+          - script: fcli fod release create $(DYNAMIC_RELEASE_NAME) --status Development --store=releaseId
+            displayName: '2. Create new Release: $(DYNAMIC_RELEASE_NAME)'
 
           - script: scancentral package -bt mvn -oss -o package.zip
             workingDirectory: $(Build.SourcesDirectory)
