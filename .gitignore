@@ -3,6 +3,7 @@
 *.fpr
 *.zip
 *.lock
+*.iml
 .DS_Store
 target/
 .classpath
