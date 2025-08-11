@@ -24,3 +24,9 @@ stages:
     steps:
       - script: fcli --version
         displayName: '1. Login to Fortify on Demand'
+
+      - script: scancentral package -bt mvn -oss -o package.zip
+        displayName: '2. Package application source code with scancentral'
+      
+      - script: fcli fod action run package
+        displayName: '3. Package application source code with fod action'
