@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-**ChemApp** is a simple Java web application built for demonstration purposes.
+**ChemApp** is a simple Java web application built for SAST demonstration purposes.
 
 It uses the following technologies:
 * **Language:** Java 8
