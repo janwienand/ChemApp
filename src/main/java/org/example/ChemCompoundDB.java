@@ -1,5 +1,11 @@
 package org.example;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -15,7 +21,7 @@ public class ChemCompoundDB {
     private static final String DB_URL = "jdbc:h2:mem:chemdb;DB_CLOSE_DELAY=-1";
     private static final String DB_USER = "sa";
     private static final String DB_PASSWORD = "very_secret_and_complex_password";
-    private static final String API_SECRET_KEY = "key123_a_very_bad_secret_dont_use_it";
+    private static final String API_SECRET_KEY = "key123_a_very_bad_secret_dont_use";
     private static final String SALT_FOR_HASHING = "static_salt_for_every_user";
 
 
@@ -36,6 +42,12 @@ public class ChemCompoundDB {
             html.append("<form action='/addnote' method='post'>");
             html.append("<textarea name='note' rows='4' cols='50'></textarea><br>");
             html.append("<input type='submit' value='Save Note'>");
+            html.append("</form>");
+            html.append("<hr>");
+            html.append("<h3>View Logs</h3>");
+            html.append("<form action='/logs' method='get'>");
+            html.append("Log file: <input type='text' name='file' value='system.log'>");
+            html.append("<input type='submit' value='View Log'>");
             html.append("</form>");
             html.append("<hr>");
             html.append("<h2>Research Notes</h2>");
@@ -96,6 +108,21 @@ public class ChemCompoundDB {
             res.redirect("/");
             return "";
         });
+
+        get("/logs", (req, res) -> {
+            String logFile = req.queryParams("file");
+            String logDirectory = "logs/";
+
+            Path path = Paths.get(logDirectory + logFile);
+
+            try {
+                String content = new String(Files.readAllBytes(path));
+                res.type("text/plain");
+                return content;
+            } catch (IOException e) {
+                return "Error reading log file: " + e.getMessage();
+            }
+        });
     }
 
     private static void initializeDatabase() {
@@ -113,6 +140,20 @@ public class ChemCompoundDB {
         } catch (SQLException e) {
             e.printStackTrace();
             System.exit(1);
+        }
+
+        // Create a dummy log directory and file for the Path Manipulation demo
+        try {
+            File logDir = new File("logs");
+            if (!logDir.exists()) {
+                logDir.mkdir();
+            }
+            try (PrintWriter writer = new PrintWriter("logs/system.log", "UTF-8")) {
+                writer.println("INFO: Application initialized successfully.");
+                writer.println("WARN: Demo mode is active. This application is not secure.");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
