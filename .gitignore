@@ -1,0 +1,12 @@
+# Default ignored files
+.idea
+*.iml
+*.fpr
+*.pdf
+*.zip
+*lock
+target/
+.classpath
+.project
+.settings/
+.env
