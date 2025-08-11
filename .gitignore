@@ -4,7 +4,7 @@
 *.fpr
 *.pdf
 *.zip
-*lock
+*.lock
 target/
 .classpath
 .project
