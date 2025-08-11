@@ -7,17 +7,16 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  SOURCE_RELEASE: 'ChemCompoundDB:main'
   NEW_RELEASE_BASE_NAME: 'ChemCompoundDB'
 
 stages:
   - stage: FortifyScan
-    displayName: 'Fortify SAST Scan & Policy Check'
+    displayName: 'Fortify SAST + SCA Scan and Policy Check'
     jobs:
       - job: RunFortifyScan
         displayName: 'Create Release, Scan and Check Policy'
         container:
-          image: fortifydocker/fortify-ci-tools:latest-jdk-17
+          image: fortifydocker/fortify-ci-tools:8.0.0-jdk-17
 
         variables:
           FCLI_DEFAULT_FOD_USER: $(FOD_USER)
@@ -48,14 +47,14 @@ stages:
             displayName: '4. Start SAST Scan and wait for completion'
 
           - script: |
-              # echo "--- Checking Policy ---"
-              # fcli fod action run check-policy --release ::releaseId::
-              
               echo "--- Listing Issues ---"
               fcli fod issue list --release ::releaseId::
               
               echo "--- Generating Release Summary ---"
               fcli fod action run release-summary --release ::releaseId::
+              
+              echo "--- Checking Policy ---"
+              fcli fod action run check-policy --release ::releaseId::
             displayName: '5. Check Policy and Generate Reports'
 
           - script: fcli fod session logout
