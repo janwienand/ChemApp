@@ -46,10 +46,7 @@ stages:
 
           - script: |
               echo "--- Listing Issues ---"
-              fcli fod issue list --release ::releaseId::
-              
-              echo "--- Generating Release Summary ---"
-              fcli fod action run release-summary --release ::releaseId::
+              fcli fod issue list --release ::releaseId:: -o "table=severityString:Severity,category:Category,primaryLocation:Location" --style border
               
               echo "--- Checking Policy ---"
               fcli fod action run check-policy --release ::releaseId::
