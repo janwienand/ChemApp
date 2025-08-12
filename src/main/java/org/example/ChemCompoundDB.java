@@ -117,6 +117,6 @@ public class ChemCompoundDB {
     }
 
     private void legacyEncrypt() throws NoSuchAlgorithmException, NoSuchPaddingException {
-        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        Cipher cipher = Cipher.getInstance("DES");
     }
 }
