@@ -30,7 +30,7 @@ stages:
             displayName: '1. Login to Fortify on Demand'
 
           - script: |
-              fcli fod release create $(DYNAMIC_RELEASE_NAME) --status Development --store=releaseId
+              fcli fod release create $(DYNAMIC_RELEASE_NAME) --status Production --store=releaseId
               fcli fod sast-scan setup --release ::releaseId:: --assessment-type "Static Assessment" --entitlement-frequency Subscription --audit-preference Automated --oss --use-aviator
             displayName: '2. Create new FoD Release: $(DYNAMIC_RELEASE_NAME)'
 
