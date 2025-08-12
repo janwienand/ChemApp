@@ -17,6 +17,10 @@ stages:
           image: fortifydocker/fortify-ci-tools:8.0.0-jdk-17
 
         variables:
+          FCLI_DEFAULT_FOD_USER: $(FOD_USER)
+          FCLI_DEFAULT_FOD_PASSWORD: $(FOD_PASSWORD)
+          FCLI_DEFAULT_FOD_TENANT: $(FOD_TENANT)
+          FCLI_DEFAULT_FOD_URL: $(FOD_URL)
           DYNAMIC_RELEASE_NAME: '$(NEW_RELEASE_BASE_NAME):build-$(Build.BuildId)'
 
         steps:
@@ -41,22 +45,13 @@ stages:
             displayName: '4. Start SAST+ SCA Scan and wait for completion'
 
           - script: |
-              echo "--- Listing All Issues ---"
+              echo "--- Listing Issues ---"
               fcli fod issue list --release ::releaseId:: -o "table=severityString:Severity,category:Category,primaryLocation:Location" --style border
-            displayName: '5. List All Discovered Issues'
-
-          - script: |
-              echo "--- Checking for Critical Vulnerabilities ---"
-              CRITICAL_COUNT=$(fcli fod issue list --release ::releaseId:: -q "severityString=='Critical'" -o json | jq 'length')
-              echo "Number of critical issues found: $CRITICAL_COUNT"
-              if [ $CRITICAL_COUNT -gt 0 ]; then
-                echo "##vso[task.logissue type=error]Found $CRITICAL_COUNT critical vulnerabilities. Failing the build."
-                exit 1
-              else
-                echo "No critical vulnerabilities found. Build can proceed."
-              fi
-            displayName: '6. Fail build on Critical Issues'
+              
+              echo "--- Checking Policy and Fail Pipeline if we have at least one Critical Finding ---"
+              fcli fod action run check-policy --release ::releaseId::
+            displayName: '5. Check Policy and Generate Reports'
 
           - script: fcli fod session logout
-            displayName: '7. Logout from Fortify on Demand'
+            displayName: '6. Logout from Fortify on Demand'
             condition: always()
