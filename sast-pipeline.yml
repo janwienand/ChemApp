@@ -5,7 +5,7 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  NEW_RELEASE_BASE_NAME: 'ChemCompoundDB'
+  NEW_RELEASE_BASE_NAME: 'ChemApp'
 
 stages:
   - stage: FortifyScan
