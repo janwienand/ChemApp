@@ -10,3 +10,8 @@ target/
 .project
 .settings/
 .env
+dashboard.html
+launcher.log
+scancentral.log
+debricked.fingerprints.txt
+package.zip
